@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>しご×できスイッチ</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
   <style>
@@ -13,17 +13,14 @@
     .app { width: 100%; max-width: 400px; min-height: 100vh; background: white; display: flex; flex-direction: column; position: relative; }
     .screen { display: none; flex-direction: column; flex: 1; }
     .screen.active { display: flex; }
-
     .header { padding: 16px; border-bottom: 2px solid #1565C0; display: flex; align-items: center; gap: 12px; background: #1565C0; }
     .header h2 { font-size: 16px; font-weight: 700; flex: 1; color: white; }
     .app-title { font-size: 18px; font-weight: 900; color: #FFD600; letter-spacing: -0.5px; }
     .btn-back { background: none; border: none; cursor: pointer; font-size: 20px; color: white; padding: 4px; }
-
     .bottom-nav { border-top: 3px solid #1565C0; display: flex; background: white; }
     .nav-btn { flex: 1; padding: 12px 8px; background: none; border: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; color: #bbb; font-size: 11px; font-family: 'Noto Sans JP', sans-serif; font-weight: 700; }
     .nav-btn.active { color: #1565C0; border-top: 3px solid #E53935; margin-top: -3px; }
     .nav-btn i { font-size: 20px; }
-
     .home-content { flex: 1; padding: 16px; display: flex; flex-direction: column; gap: 16px; overflow-y: auto; background: #fafafa; }
     .section-label { font-size: 11px; font-weight: 700; color: #1565C0; margin-bottom: 6px; letter-spacing: 1px; }
     .section-box { background: white; border-radius: 10px; padding: 12px; border: 1.5px solid #e5e5e5; min-height: 48px; font-size: 13px; color: #333; }
@@ -31,11 +28,9 @@
     .section-box .item-row:not(:last-child) { border-bottom: 1px solid #f0f0f0; }
     .section-box .item-icon { flex-shrink: 0; font-size: 14px; }
     .section-box .item-text { flex: 1; line-height: 1.5; font-weight: 700; color: #222; }
-
     .start-btn { background: #FFD600; color: #1565C0; border: none; border-radius: 14px; padding: 18px; font-size: 18px; font-weight: 900; cursor: pointer; width: 100%; margin-top: auto; font-family: 'Noto Sans JP', sans-serif; letter-spacing: 2px; transition: transform 0.1s; }
     .start-btn:hover { background: #FFC000; transform: scale(1.02); }
     .start-btn:active { transform: scale(0.98); }
-
     .list-content { flex: 1; overflow-y: auto; }
     .list-item { padding: 14px 16px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: flex-start; gap: 12px; }
     .list-item-text { flex: 1; }
@@ -50,7 +45,6 @@
     .del-btn:hover { color: #E53935; }
     .add-btn { margin: 16px; width: calc(100% - 32px); padding: 14px; background: none; border: 2px dashed #1565C0; border-radius: 10px; color: #1565C0; font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: 'Noto Sans JP', sans-serif; }
     .add-btn:hover { background: #E3F2FD; }
-
     .start-content { flex: 1; padding: 20px 16px; display: flex; flex-direction: column; background: #fafafa; }
     .progress-bar { height: 6px; background: #e5e5e5; border-radius: 3px; margin-bottom: 20px; }
     .progress-fill { height: 100%; background: #1565C0; border-radius: 3px; transition: width 0.4s ease; }
@@ -59,12 +53,10 @@
     .question-sub { font-size: 13px; color: #888; line-height: 1.7; margin-bottom: 16px; }
     .comment-input { width: 100%; border: 1.5px solid #e5e5e5; border-radius: 10px; padding: 10px 12px; font-size: 13px; color: #111; background: white; resize: none; height: 80px; margin-bottom: 16px; font-family: 'Noto Sans JP', sans-serif; }
     .comment-input:focus { border-color: #1565C0; outline: none; }
-
     .msg-banner { display: none; padding: 12px 16px; text-align: center; font-size: 13px; font-weight: 700; line-height: 1.6; border-radius: 10px; margin-bottom: 12px; }
     .msg-banner.maru-msg { background: #FFF9C4; color: #1565C0; border: 1.5px solid #FFD600; }
     .msg-banner.batsu-msg { background: #FFEBEE; color: #B71C1C; border: 1.5px solid #E53935; }
     .msg-banner.show { display: block; }
-
     .check-btns { display: flex; gap: 12px; margin-top: auto; }
     .check-btn { flex: 1; padding: 24px 14px; border: 2px solid #e5e5e5; border-radius: 14px; background: white; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; font-weight: 900; font-family: 'Noto Sans JP', sans-serif; transition: transform 0.1s; }
     .check-btn .btn-icon { font-size: 44px; }
@@ -73,7 +65,6 @@
     .check-btn.maru:hover { background: #FFF9C4; transform: scale(1.03); }
     .check-btn.batsu { color: #E53935; border-color: #E53935; background: #FFEBEE; }
     .check-btn.batsu:hover { background: #FFCDD2; transform: scale(1.03); }
-
     .result-content { flex: 1; padding: 20px 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; background: #1565C0; }
     .result-icon { font-size: 64px; }
     .result-title { font-size: 22px; font-weight: 900; color: #FFD600; letter-spacing: 1px; }
@@ -86,10 +77,9 @@
     .result-msg { font-size: 14px; font-weight: 700; color: #90CAF9; text-align: center; }
     .home-btn { margin-top: 8px; padding: 14px 40px; background: #FFD600; color: #1565C0; border: none; border-radius: 12px; font-size: 15px; font-weight: 900; cursor: pointer; font-family: 'Noto Sans JP', sans-serif; }
     .home-btn:hover { background: #FFC000; }
-
     .streak-badge { display: inline-block; background: #FFD600; color: #1565C0; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; margin-left: 6px; }
+    .initial-badge { display: inline-block; background: #E53935; color: white; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; margin-left: 6px; }
     .worst-badge { display: inline-block; background: #E53935; color: white; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; margin-left: 6px; }
-
     .calendar-content { flex: 1; padding: 16px; overflow-y: auto; }
     .cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
     .cal-nav button { background: #1565C0; color: #FFD600; border: none; border-radius: 8px; padding: 8px 14px; cursor: pointer; font-size: 14px; font-weight: 700; font-family: 'Noto Sans JP', sans-serif; }
@@ -110,9 +100,40 @@
     .cal-detail-icon { flex-shrink: 0; }
     .cal-detail-text { flex: 1; color: #333; line-height: 1.5; font-weight: 700; }
     .cal-empty-msg { text-align: center; color: #bbb; font-size: 13px; padding: 24px 0; font-weight: 700; }
+
+    /* 初期定着ポップアップ */
+    .initial-popup { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 999; justify-content: center; align-items: center; }
+    .initial-popup.show { display: flex; }
+    .initial-popup-inner { background: white; border-radius: 16px; padding: 28px 24px; max-width: 320px; width: 90%; text-align: center; }
+    .initial-popup-icon { font-size: 48px; margin-bottom: 12px; }
+    .initial-popup-title { font-size: 20px; font-weight: 900; color: #E53935; margin-bottom: 8px; }
+    .initial-popup-item { font-size: 16px; font-weight: 900; color: #1565C0; margin-bottom: 8px; }
+    .initial-popup-msg { font-size: 13px; color: #888; line-height: 1.7; margin-bottom: 20px; }
+    .initial-popup-btn { background: #FFD600; color: #1565C0; border: none; border-radius: 10px; padding: 14px 40px; font-size: 16px; font-weight: 900; cursor: pointer; font-family: 'Noto Sans JP', sans-serif; }
   </style>
 </head>
 <body>
+
+<div id="welcome-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:999; justify-content:center; align-items:center;">
+  <div style="background:white; border-radius:16px; padding:28px 24px; max-width:320px; width:90%; text-align:center;">
+    <div style="font-size:32px; margin-bottom:12px;">⚡</div>
+    <div style="font-size:18px; font-weight:900; color:#1565C0; margin-bottom:16px;">使い方</div>
+    <div style="font-size:14px; font-weight:700; color:#111; line-height:1.8; margin-bottom:8px;">毎日STARTを押して<br>⭕❌でチェックしましょう！</div>
+    <div style="font-size:13px; color:#888; line-height:1.7; margin-bottom:24px;">休日は仕事をしていないため<br>チェック不要です。<br>連続記録は仕事をした日だけ<br>カウントされます。</div>
+    <button onclick="closeWelcome()" style="background:#FFD600; color:#1565C0; border:none; border-radius:10px; padding:14px 40px; font-size:16px; font-weight:900; cursor:pointer; font-family:'Noto Sans JP',sans-serif;">はじめる</button>
+  </div>
+</div>
+
+<div class="initial-popup" id="initial-popup">
+  <div class="initial-popup-inner">
+    <div class="initial-popup-icon">🎉</div>
+    <div class="initial-popup-title">初期定着しました！</div>
+    <div class="initial-popup-item" id="initial-popup-item"></div>
+    <div class="initial-popup-msg">7日連続達成！<br>習慣化まであと20日！<br>この調子で続けよう💪</div>
+    <button class="initial-popup-btn" onclick="closeInitialPopup()">よし、続けるぞ！</button>
+  </div>
+</div>
+
 <div class="app">
 
   <div class="screen active" id="screen-home">
@@ -123,6 +144,10 @@
       <div>
         <div class="section-label">今日の目標</div>
         <div class="section-box" id="home-goal"><span style="color:#bbb;font-weight:400">リスト画面で☆を設定してください</span></div>
+      </div>
+      <div>
+        <div class="section-label">初期定着（7日連続⭕）</div>
+        <div class="section-box" id="home-initial"><span style="color:#bbb;font-weight:400">7日連続⭕の項目がここに表示されます</span></div>
       </div>
       <div>
         <div class="section-label">できる・達成（27日連続⭕）</div>
@@ -187,7 +212,12 @@
         <div class="stat"><div class="stat-num batsu-color" id="res-batsu">0</div><div class="stat-label">❌ 課題</div></div>
       </div>
       <div class="result-msg" id="res-msg"></div>
-      <button class="home-btn" id="btn-home">ホームに戻る</button>
+      <div style="width:100%; margin-top:8px;">
+  <div style="font-size:13px; font-weight:700; color:#90CAF9; margin-bottom:8px;">📌 📌 今日できなかったことで、明日変える行動を1つ決めよう</div>
+  <textarea id="action-input" style="width:100%; border:1.5px solid #FFD600; border-radius:10px; padding:12px; font-size:14px; font-weight:700; color:#111; background:white; resize:none; height:90px; font-family:'Noto Sans JP',sans-serif;" placeholder="例：メールの返信は受け取ってすぐに返す"></textarea>
+  <button id="btn-action-save" style="background:#FFD600; color:#1565C0; border:none; border-radius:10px; padding:12px; font-size:14px; font-weight:900; cursor:pointer; width:100%; font-family:'Noto Sans JP',sans-serif; margin-top:8px;">明日に向けて保存！💪</button>
+</div>
+<button class="home-btn" id="btn-home">ホームに戻る</button>
     </div>
   </div>
 
@@ -240,17 +270,29 @@
   ];
   let records = JSON.parse(localStorage.getItem('nippo-records') || '{}');
   let achieved = JSON.parse(localStorage.getItem('nippo-achieved') || '[]');
+  let initialAchieved = JSON.parse(localStorage.getItem('nippo-initial') || '[]');
   let nextId = Math.max(...items.map(i => i.id), 0) + 1;
   let currentQ = 0;
   let sessionResults = [];
   let calYear = new Date().getFullYear();
   let calMonth = new Date().getMonth();
   const STREAK_DAYS = 27;
+  const INITIAL_DAYS = 7;
 
   function save() {
     localStorage.setItem('nippo-items', JSON.stringify(items));
     localStorage.setItem('nippo-records', JSON.stringify(records));
     localStorage.setItem('nippo-achieved', JSON.stringify(achieved));
+    localStorage.setItem('nippo-initial', JSON.stringify(initialAchieved));
+  }
+
+  function closeWelcome() {
+    document.getElementById('welcome-overlay').style.display = 'none';
+    localStorage.setItem('welcomed', 'true');
+  }
+
+  function closeInitialPopup() {
+    document.getElementById('initial-popup').classList.remove('show');
   }
 
   function showScreen(id) {
@@ -277,6 +319,17 @@
     return counts;
   }
 
+  function checkInitialAchieved() {
+    const days = getLastNDays(INITIAL_DAYS);
+    const recordedDays = days.filter(day => records[day]);
+    if (recordedDays.length < INITIAL_DAYS) return [];
+    return items.filter(item => {
+      const isStreak = recordedDays.every(day => records[day] && records[day][item.id] === 'maru');
+      const alreadyAchieved = initialAchieved.find(a => a.id === item.id);
+      return isStreak && !alreadyAchieved;
+    });
+  }
+
   function checkAndMoveToAchieved() {
     const days = getLastNDays(STREAK_DAYS);
     const recordedDays = days.filter(day => records[day]);
@@ -297,6 +350,24 @@
       ? starred.map(i => `<div class="item-row"><span class="item-icon">⭐</span><span class="item-text">${i.title}</span></div>`).join('')
       : '<span style="color:#bbb;font-weight:400">リスト画面で☆を設定してください</span>';
 
+    // 初期定着（7日連続）
+    const days7 = getLastNDays(INITIAL_DAYS);
+    const recorded7 = days7.filter(day => records[day]);
+    const initialItems = recorded7.length >= INITIAL_DAYS
+      ? [...items, ...achieved].filter(item => recorded7.every(day => records[day] && records[day][item.id] === 'maru'))
+      : [];
+    const initialEl = document.getElementById('home-initial');
+    if (initialItems.length) {
+      initialEl.innerHTML = initialItems.map(i => `
+        <div class="item-row">
+          <span class="item-icon">🔥</span>
+          <span class="item-text">${i.title}<span class="initial-badge">初期定着！</span></span>
+        </div>`).join('');
+    } else {
+      initialEl.innerHTML = '<span style="color:#bbb;font-weight:400">7日連続⭕の項目がここに表示されます</span>';
+    }
+
+    // できる・達成（27日連続）
     document.getElementById('home-achieve').innerHTML = achieved.length
       ? achieved.map(i => `<div class="item-row"><span class="item-icon">✅</span><span class="item-text">${i.title}<span class="streak-badge">${STREAK_DAYS}日連続⭕</span></span></div>`).join('')
       : `<span style="color:#bbb;font-weight:400">${STREAK_DAYS}日連続⭕の項目がここに表示されます</span>`;
@@ -410,6 +481,18 @@
     records[today] = rec;
     save();
     checkAndMoveToAchieved();
+
+    // 初期定着チェック
+    const newInitial = checkInitialAchieved();
+    if (newInitial.length > 0) {
+      newInitial.forEach(item => initialAchieved.push({ id: item.id, title: item.title }));
+      save();
+      setTimeout(() => {
+        document.getElementById('initial-popup-item').textContent = `「${newInitial[0].title}」`;
+        document.getElementById('initial-popup').classList.add('show');
+      }, 1000);
+    }
+
     const maru = sessionResults.filter(r => r.result === 'maru').length;
     const batsu = sessionResults.filter(r => r.result === 'batsu').length;
     document.getElementById('res-maru').textContent = maru;
@@ -482,8 +565,36 @@
     });
   });
 
+  if (!localStorage.getItem('welcomed')) {
+    document.getElementById('welcome-overlay').style.display = 'flex';
+  }
+document.getElementById('btn-action-save').addEventListener('click', () => {
+  const text = document.getElementById('action-input').value.trim();
+  if (!text) { alert('改善アクションを入力してください'); return; }
+  const today = new Date().toISOString().split('T')[0];
+  localStorage.setItem('action-' + today, text);
+  alert('保存しました！明日のホーム画面に表示されます😊');
+  document.getElementById('action-input').value = '';
+});
+
+function updateActionHome() {
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const key = 'action-' + yesterday.toISOString().split('T')[0];
+  const action = localStorage.getItem(key);
+  const goalEl = document.getElementById('home-goal');
+  if (action) {
+    const starred = items.filter(it => it.star);
+    let html = `<div class="item-row"><span class="item-icon">📌</span><span class="item-text" style="color:#E53935;">昨日の改善：${action}</span></div>`;
+    if (starred.length) {
+      html += starred.map(i => `<div class="item-row"><span class="item-icon">⭐</span><span class="item-text">${i.title}</span></div>`).join('');
+    }
+    goalEl.innerHTML = html;
+  }
+}
   renderList();
   updateHome();
+  updateActionHome();
 </script>
 </body>
 </html>
