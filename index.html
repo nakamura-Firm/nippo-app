@@ -3,87 +3,135 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>仕事できるようになるアプリ</title>
+  <title>しご×できスイッチ</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: sans-serif; background: #f5f5f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+    body { font-family: 'Noto Sans JP', sans-serif; background: #f5f5f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
     .app { width: 100%; max-width: 400px; min-height: 100vh; background: white; display: flex; flex-direction: column; position: relative; }
     .screen { display: none; flex-direction: column; flex: 1; }
     .screen.active { display: flex; }
-    .header { padding: 16px; border-bottom: 1px solid #e5e5e5; display: flex; align-items: center; gap: 12px; }
-    .header h2 { font-size: 16px; font-weight: 500; flex: 1; }
-    .btn-back { background: none; border: none; cursor: pointer; font-size: 20px; color: #888; padding: 4px; }
-    .bottom-nav { border-top: 1px solid #e5e5e5; display: flex; }
-    .nav-btn { flex: 1; padding: 12px 8px; background: none; border: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; color: #bbb; font-size: 11px; }
-    .nav-btn.active { color: #222; }
+
+    .header { padding: 16px; border-bottom: 2px solid #1565C0; display: flex; align-items: center; gap: 12px; background: #1565C0; }
+    .header h2 { font-size: 16px; font-weight: 700; flex: 1; color: white; }
+    .app-title { font-size: 18px; font-weight: 900; color: #FFD600; letter-spacing: -0.5px; }
+    .btn-back { background: none; border: none; cursor: pointer; font-size: 20px; color: white; padding: 4px; }
+
+    .bottom-nav { border-top: 3px solid #1565C0; display: flex; background: white; }
+    .nav-btn { flex: 1; padding: 12px 8px; background: none; border: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; color: #bbb; font-size: 11px; font-family: 'Noto Sans JP', sans-serif; font-weight: 700; }
+    .nav-btn.active { color: #1565C0; border-top: 3px solid #E53935; margin-top: -3px; }
     .nav-btn i { font-size: 20px; }
-    .home-content { flex: 1; padding: 16px; display: flex; flex-direction: column; gap: 16px; overflow-y: auto; }
-    .section-label { font-size: 12px; color: #888; margin-bottom: 6px; }
-    .section-box { background: #f9f9f9; border-radius: 8px; padding: 12px; border: 1px solid #e5e5e5; min-height: 48px; font-size: 13px; color: #333; }
-    .section-box .item-row { display: flex; align-items: flex-start; gap: 8px; padding: 4px 0; }
-    .section-box .item-row:not(:last-child) { border-bottom: 1px solid #eee; }
+
+    .home-content { flex: 1; padding: 16px; display: flex; flex-direction: column; gap: 16px; overflow-y: auto; background: #fafafa; }
+    .section-label { font-size: 11px; font-weight: 700; color: #1565C0; margin-bottom: 6px; letter-spacing: 1px; }
+    .section-box { background: white; border-radius: 10px; padding: 12px; border: 1.5px solid #e5e5e5; min-height: 48px; font-size: 13px; color: #333; }
+    .section-box .item-row { display: flex; align-items: flex-start; gap: 8px; padding: 6px 0; }
+    .section-box .item-row:not(:last-child) { border-bottom: 1px solid #f0f0f0; }
     .section-box .item-icon { flex-shrink: 0; font-size: 14px; }
-    .section-box .item-text { flex: 1; line-height: 1.5; }
-    .start-btn { background: #222; color: white; border: none; border-radius: 12px; padding: 16px; font-size: 16px; font-weight: 500; cursor: pointer; width: 100%; margin-top: auto; }
-    .start-btn:hover { background: #444; }
+    .section-box .item-text { flex: 1; line-height: 1.5; font-weight: 700; color: #222; }
+
+    .start-btn { background: #FFD600; color: #1565C0; border: none; border-radius: 14px; padding: 18px; font-size: 18px; font-weight: 900; cursor: pointer; width: 100%; margin-top: auto; font-family: 'Noto Sans JP', sans-serif; letter-spacing: 2px; transition: transform 0.1s; }
+    .start-btn:hover { background: #FFC000; transform: scale(1.02); }
+    .start-btn:active { transform: scale(0.98); }
+
     .list-content { flex: 1; overflow-y: auto; }
-    .list-item { padding: 14px 16px; border-bottom: 1px solid #e5e5e5; display: flex; align-items: flex-start; gap: 12px; }
+    .list-item { padding: 14px 16px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: flex-start; gap: 12px; }
     .list-item-text { flex: 1; }
-    .list-item-title { font-size: 14px; font-weight: 500; color: #222; margin-bottom: 3px; }
+    .list-item-title { font-size: 14px; font-weight: 700; color: #111; margin-bottom: 3px; }
     .list-item-sub { font-size: 12px; color: #888; line-height: 1.5; }
-    .star-btn { background: none; border: none; cursor: pointer; font-size: 20px; color: #ccc; flex-shrink: 0; padding: 2px; }
-    .star-btn.active { color: #f59e0b; }
-    .add-btn { margin: 16px; width: calc(100% - 32px); padding: 12px; background: none; border: 1px dashed #ddd; border-radius: 8px; color: #aaa; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
-    .start-content { flex: 1; padding: 20px 16px; display: flex; flex-direction: column; }
-    .progress-bar { height: 4px; background: #f0f0f0; border-radius: 2px; margin-bottom: 20px; }
-    .progress-fill { height: 100%; background: #222; border-radius: 2px; transition: width 0.3s; }
-    .question-num { font-size: 12px; color: #888; margin-bottom: 8px; }
-    .question-title { font-size: 16px; font-weight: 500; color: #222; margin-bottom: 6px; line-height: 1.5; }
-    .question-sub { font-size: 13px; color: #888; line-height: 1.6; margin-bottom: 20px; }
-    .comment-input { width: 100%; border: 1px solid #ddd; border-radius: 8px; padding: 10px 12px; font-size: 13px; color: #333; background: white; resize: none; height: 80px; margin-bottom: 16px; font-family: sans-serif; }
+    .list-item-actions { display: flex; gap: 8px; flex-shrink: 0; align-items: center; }
+    .star-btn { background: none; border: none; cursor: pointer; font-size: 20px; color: #ddd; padding: 2px; }
+    .star-btn.active { color: #FFD600; }
+    .edit-btn { background: none; border: none; cursor: pointer; font-size: 16px; color: #bbb; padding: 2px; }
+    .edit-btn:hover { color: #1565C0; }
+    .del-btn { background: none; border: none; cursor: pointer; font-size: 16px; color: #bbb; padding: 2px; }
+    .del-btn:hover { color: #E53935; }
+    .add-btn { margin: 16px; width: calc(100% - 32px); padding: 14px; background: none; border: 2px dashed #1565C0; border-radius: 10px; color: #1565C0; font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: 'Noto Sans JP', sans-serif; }
+    .add-btn:hover { background: #E3F2FD; }
+
+    .start-content { flex: 1; padding: 20px 16px; display: flex; flex-direction: column; background: #fafafa; }
+    .progress-bar { height: 6px; background: #e5e5e5; border-radius: 3px; margin-bottom: 20px; }
+    .progress-fill { height: 100%; background: #1565C0; border-radius: 3px; transition: width 0.4s ease; }
+    .question-num { font-size: 12px; font-weight: 700; color: #1565C0; margin-bottom: 8px; letter-spacing: 1px; }
+    .question-title { font-size: 17px; font-weight: 900; color: #111; margin-bottom: 8px; line-height: 1.6; }
+    .question-sub { font-size: 13px; color: #888; line-height: 1.7; margin-bottom: 16px; }
+    .comment-input { width: 100%; border: 1.5px solid #e5e5e5; border-radius: 10px; padding: 10px 12px; font-size: 13px; color: #111; background: white; resize: none; height: 80px; margin-bottom: 16px; font-family: 'Noto Sans JP', sans-serif; }
+    .comment-input:focus { border-color: #1565C0; outline: none; }
+
+    .msg-banner { display: none; padding: 12px 16px; text-align: center; font-size: 13px; font-weight: 700; line-height: 1.6; border-radius: 10px; margin-bottom: 12px; }
+    .msg-banner.maru-msg { background: #FFF9C4; color: #1565C0; border: 1.5px solid #FFD600; }
+    .msg-banner.batsu-msg { background: #FFEBEE; color: #B71C1C; border: 1.5px solid #E53935; }
+    .msg-banner.show { display: block; }
+
     .check-btns { display: flex; gap: 12px; margin-top: auto; }
-    .check-btn { flex: 1; padding: 24px 14px; border: 2px solid #ddd; border-radius: 12px; background: white; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; font-weight: 500; }
-    .check-btn .btn-icon { font-size: 40px; }
-    .check-btn .btn-label { font-size: 14px; }
-    .check-btn.maru { color: #059669; border-color: #059669; }
-    .check-btn.batsu { color: #dc2626; border-color: #dc2626; }
-    .check-btn:hover { opacity: 0.8; }
-    .popup { position: fixed; top: 40px; left: 50%; transform: translateX(-50%); background: #222; color: white; padding: 12px 20px; border-radius: 12px; font-size: 13px; font-weight: 500; display: none; z-index: 10; text-align: center; max-width: 300px; line-height: 1.5; }
-    .popup.show { display: block; animation: popIn 3s forwards; }
-    @keyframes popIn { 0%{opacity:0;transform:translateX(-50%) translateY(-8px)} 15%{opacity:1;transform:translateX(-50%) translateY(0)} 80%{opacity:1} 100%{opacity:0} }
-    .result-content { flex: 1; padding: 20px 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; }
-    .result-icon { font-size: 48px; }
-    .result-title { font-size: 20px; font-weight: 500; color: #222; }
-    .result-stats { display: flex; gap: 24px; margin: 8px 0; }
+    .check-btn { flex: 1; padding: 24px 14px; border: 2px solid #e5e5e5; border-radius: 14px; background: white; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; font-weight: 900; font-family: 'Noto Sans JP', sans-serif; transition: transform 0.1s; }
+    .check-btn .btn-icon { font-size: 44px; }
+    .check-btn .btn-label { font-size: 15px; }
+    .check-btn.maru { color: #1565C0; border-color: #FFD600; background: #FFFDE7; }
+    .check-btn.maru:hover { background: #FFF9C4; transform: scale(1.03); }
+    .check-btn.batsu { color: #E53935; border-color: #E53935; background: #FFEBEE; }
+    .check-btn.batsu:hover { background: #FFCDD2; transform: scale(1.03); }
+
+    .result-content { flex: 1; padding: 20px 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; background: #1565C0; }
+    .result-icon { font-size: 64px; }
+    .result-title { font-size: 22px; font-weight: 900; color: #FFD600; letter-spacing: 1px; }
+    .result-stats { display: flex; gap: 32px; margin: 8px 0; }
     .stat { text-align: center; }
-    .stat-num { font-size: 24px; font-weight: 500; }
-    .stat-label { font-size: 12px; color: #888; }
-    .maru-color { color: #059669; }
-    .batsu-color { color: #dc2626; }
-    .home-btn { margin-top: 16px; padding: 12px 32px; background: #222; color: white; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; }
+    .stat-num { font-size: 32px; font-weight: 900; }
+    .stat-label { font-size: 12px; font-weight: 700; color: #90CAF9; margin-top: 4px; }
+    .maru-color { color: #FFD600; }
+    .batsu-color { color: #EF9A9A; }
+    .result-msg { font-size: 14px; font-weight: 700; color: #90CAF9; text-align: center; }
+    .home-btn { margin-top: 8px; padding: 14px 40px; background: #FFD600; color: #1565C0; border: none; border-radius: 12px; font-size: 15px; font-weight: 900; cursor: pointer; font-family: 'Noto Sans JP', sans-serif; }
+    .home-btn:hover { background: #FFC000; }
+
+    .streak-badge { display: inline-block; background: #FFD600; color: #1565C0; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; margin-left: 6px; }
+    .worst-badge { display: inline-block; background: #E53935; color: white; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; margin-left: 6px; }
+
+    .calendar-content { flex: 1; padding: 16px; overflow-y: auto; }
+    .cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .cal-nav button { background: #1565C0; color: #FFD600; border: none; border-radius: 8px; padding: 8px 14px; cursor: pointer; font-size: 14px; font-weight: 700; font-family: 'Noto Sans JP', sans-serif; }
+    .cal-title { font-size: 16px; font-weight: 900; color: #1565C0; }
+    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 16px; }
+    .cal-dow { text-align: center; font-size: 11px; font-weight: 700; color: #1565C0; padding: 4px 0; }
+    .cal-day { text-align: center; padding: 6px 2px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 700; color: #111; min-height: 44px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+    .cal-day:hover { background: #E3F2FD; }
+    .cal-day.today { background: #1565C0; color: #FFD600; }
+    .cal-day.today:hover { background: #0D47A1; }
+    .cal-day.empty { cursor: default; }
+    .cal-day.empty:hover { background: none; }
+    .cal-mark { font-size: 10px; }
+    .cal-detail { background: #f9f9f9; border-radius: 10px; border: 1.5px solid #e5e5e5; padding: 16px; }
+    .cal-detail-title { font-size: 14px; font-weight: 900; color: #1565C0; margin-bottom: 12px; }
+    .cal-detail-item { display: flex; align-items: flex-start; gap: 8px; padding: 6px 0; border-bottom: 1px solid #eee; font-size: 13px; }
+    .cal-detail-item:last-child { border-bottom: none; }
+    .cal-detail-icon { flex-shrink: 0; }
+    .cal-detail-text { flex: 1; color: #333; line-height: 1.5; font-weight: 700; }
+    .cal-empty-msg { text-align: center; color: #bbb; font-size: 13px; padding: 24px 0; font-weight: 700; }
   </style>
 </head>
 <body>
-<div class="popup" id="popup"></div>
 <div class="app">
 
   <div class="screen active" id="screen-home">
-    <div class="header"><h2>仕事できるようになるアプリ</h2></div>
+    <div class="header">
+      <span class="app-title">しご×できスイッチ</span>
+    </div>
     <div class="home-content">
       <div>
         <div class="section-label">今日の目標</div>
-        <div class="section-box" id="home-goal"><span style="color:#bbb">リスト画面で☆を設定してください</span></div>
+        <div class="section-box" id="home-goal"><span style="color:#bbb;font-weight:400">リスト画面で☆を設定してください</span></div>
       </div>
       <div>
-        <div class="section-label">できる・達成</div>
-        <div class="section-box" id="home-achieve"><span style="color:#bbb">1週間連続⭕の項目がここに表示されます</span></div>
+        <div class="section-label">できる・達成（27日連続⭕）</div>
+        <div class="section-box" id="home-achieve"><span style="color:#bbb;font-weight:400">27日連続⭕の項目がここに表示されます</span></div>
       </div>
       <div>
-        <div class="section-label">重点項目</div>
-        <div class="section-box" id="home-weak"><span style="color:#bbb">❌が多い項目がここに表示されます</span></div>
+        <div class="section-label">重点項目（❌ワースト順）</div>
+        <div class="section-box" id="home-weak"><span style="color:#bbb;font-weight:400">❌が多い項目がここに表示されます</span></div>
       </div>
-      <button class="start-btn" id="btn-start">START</button>
+      <button class="start-btn" id="btn-start">⚡ START</button>
     </div>
     <nav class="bottom-nav">
       <button class="nav-btn active" data-screen="home"><i class="ti ti-home"></i>ホーム</button>
@@ -112,13 +160,14 @@
     <div class="start-content">
       <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
       <div class="question-num" id="q-num"></div>
+      <div class="msg-banner" id="msg-banner"></div>
       <div class="question-title" id="q-title"></div>
       <div class="question-sub" id="q-sub"></div>
       <textarea class="comment-input" id="q-comment" placeholder="コメントを入力（任意）"></textarea>
       <div class="check-btns">
         <button class="check-btn maru" id="btn-maru">
           <span class="btn-icon">⭕</span>
-          <span class="btn-label">勝ち</span>
+          <span class="btn-label">勝ち！</span>
         </button>
         <button class="check-btn batsu" id="btn-batsu">
           <span class="btn-icon">❌</span>
@@ -131,19 +180,29 @@
   <div class="screen" id="screen-result">
     <div class="result-content">
       <div class="result-icon">🏆</div>
-      <div class="result-title">今日も終了！</div>
+      <div class="result-title">今日も勝ち！</div>
       <div class="result-stats">
         <div class="stat"><div class="stat-num maru-color" id="res-maru">0</div><div class="stat-label">⭕ 勝ち</div></div>
         <div class="stat"><div class="stat-num batsu-color" id="res-batsu">0</div><div class="stat-label">❌ 課題</div></div>
       </div>
-      <div class="result-sub" id="res-msg"></div>
+      <div class="result-msg" id="res-msg"></div>
       <button class="home-btn" id="btn-home">ホームに戻る</button>
     </div>
   </div>
 
   <div class="screen" id="screen-calendar">
     <div class="header"><h2>カレンダー</h2></div>
-    <div style="flex:1;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:13px;">フェーズ3で実装予定</div>
+    <div class="calendar-content">
+      <div class="cal-nav">
+        <button id="cal-prev">＜</button>
+        <div class="cal-title" id="cal-title"></div>
+        <button id="cal-next">＞</button>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+      <div class="cal-detail" id="cal-detail">
+        <div class="cal-empty-msg">日付をタップして記録を確認</div>
+      </div>
+    </div>
     <nav class="bottom-nav">
       <button class="nav-btn" data-screen="home"><i class="ti ti-home"></i>ホーム</button>
       <button class="nav-btn active" data-screen="calendar"><i class="ti ti-calendar"></i>カレンダー</button>
@@ -154,7 +213,7 @@
 
   <div class="screen" id="screen-notify">
     <div class="header"><h2>通知設定</h2></div>
-    <div style="flex:1;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:13px;">フェーズ4で実装予定</div>
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:13px;font-weight:700;">フェーズ4で実装予定</div>
     <nav class="bottom-nav">
       <button class="nav-btn" data-screen="home"><i class="ti ti-home"></i>ホーム</button>
       <button class="nav-btn" data-screen="calendar"><i class="ti ti-calendar"></i>カレンダー</button>
@@ -179,13 +238,18 @@
     {id:11,title:'会社に利益をもたらすことに徹することができますか？',sub:'',star:false},
   ];
   let records = JSON.parse(localStorage.getItem('nippo-records') || '{}');
-  let nextId = items.length + 1;
+  let achieved = JSON.parse(localStorage.getItem('nippo-achieved') || '[]');
+  let nextId = Math.max(...items.map(i => i.id), 0) + 1;
   let currentQ = 0;
   let sessionResults = [];
+  let calYear = new Date().getFullYear();
+  let calMonth = new Date().getMonth();
+  const STREAK_DAYS = 27;
 
   function save() {
     localStorage.setItem('nippo-items', JSON.stringify(items));
     localStorage.setItem('nippo-records', JSON.stringify(records));
+    localStorage.setItem('nippo-achieved', JSON.stringify(achieved));
   }
 
   function showScreen(id) {
@@ -193,24 +257,54 @@
     document.getElementById('screen-' + id).classList.add('active');
   }
 
-  function showPopup(msg) {
-    const p = document.getElementById('popup');
-    p.textContent = msg;
-    p.classList.remove('show');
-    void p.offsetWidth;
-    p.classList.add('show');
-    setTimeout(() => p.classList.remove('show'), 3000);
+  function getLastNDays(n) {
+    const days = [];
+    for (let i = 0; i < n; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      days.push(d.toISOString().split('T')[0]);
+    }
+    return days;
   }
 
-  function renderSection(id, itemList, icon) {
-    const el = document.getElementById(id);
-    if (!itemList.length) return;
-    el.innerHTML = itemList.map(i => `
-      <div class="item-row">
-        <span class="item-icon">${icon}</span>
-        <span class="item-text">${i}</span>
-      </div>
-    `).join('');
+  function getBatsuCounts() {
+    const counts = {};
+    items.forEach(it => { counts[it.id] = 0; });
+    Object.values(records).forEach(rec => {
+      items.forEach(it => { if (rec[it.id] === 'batsu') counts[it.id]++; });
+    });
+    return counts;
+  }
+
+  function checkAndMoveToAchieved() {
+    const days = getLastNDays(STREAK_DAYS);
+    const recordedDays = days.filter(day => records[day]);
+    if (recordedDays.length < STREAK_DAYS) return;
+    items.forEach(item => {
+      const isStreak = recordedDays.every(day => records[day] && records[day][item.id] === 'maru');
+      if (isStreak && !achieved.find(a => a.id === item.id)) {
+        achieved.push({ id: item.id, title: item.title });
+        items = items.filter(it => it.id !== item.id);
+      }
+    });
+    save();
+  }
+
+  function updateHome() {
+    const starred = items.filter(it => it.star);
+    document.getElementById('home-goal').innerHTML = starred.length
+      ? starred.map(i => `<div class="item-row"><span class="item-icon">⭐</span><span class="item-text">${i.title}</span></div>`).join('')
+      : '<span style="color:#bbb;font-weight:400">リスト画面で☆を設定してください</span>';
+
+    document.getElementById('home-achieve').innerHTML = achieved.length
+      ? achieved.map(i => `<div class="item-row"><span class="item-icon">✅</span><span class="item-text">${i.title}<span class="streak-badge">${STREAK_DAYS}日連続⭕</span></span></div>`).join('')
+      : `<span style="color:#bbb;font-weight:400">${STREAK_DAYS}日連続⭕の項目がここに表示されます</span>`;
+
+    const batsuCounts = getBatsuCounts();
+    const weakItems = items.filter(it => batsuCounts[it.id] > 0).sort((a, b) => batsuCounts[b.id] - batsuCounts[a.id]).slice(0, 3);
+    document.getElementById('home-weak').innerHTML = weakItems.length
+      ? weakItems.map(i => `<div class="item-row"><span class="item-icon">❌</span><span class="item-text">${i.title}<span class="worst-badge">❌ ${batsuCounts[i.id]}回</span></span></div>`).join('')
+      : '<span style="color:#059669;font-weight:700">課題項目なし！完璧です</span>';
   }
 
   function renderList() {
@@ -221,7 +315,11 @@
           <div class="list-item-title">${item.title}</div>
           ${item.sub ? `<div class="list-item-sub">${item.sub}</div>` : ''}
         </div>
-        <button class="star-btn ${item.star ? 'active' : ''}" data-id="${item.id}">${item.star ? '★' : '☆'}</button>
+        <div class="list-item-actions">
+          <button class="star-btn ${item.star ? 'active' : ''}" data-id="${item.id}">${item.star ? '★' : '☆'}</button>
+          <button class="edit-btn" data-id="${item.id}">✏️</button>
+          <button class="del-btn" data-id="${item.id}">🗑</button>
+        </div>
       </div>
     `).join('') + `<button class="add-btn" id="btn-add">＋ 項目を追加</button>`;
 
@@ -233,43 +331,44 @@
       });
     });
 
+    el.querySelectorAll('.edit-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = parseInt(btn.dataset.id);
+        const item = items.find(it => it.id === id);
+        const newTitle = prompt('タイトルを編集', item.title);
+        if (newTitle === null) return;
+        if (!newTitle.trim()) { alert('タイトルを入力してください'); return; }
+        const newSub = prompt('補足説明を編集', item.sub);
+        items = items.map(it => it.id === id ? {...it, title: newTitle.trim(), sub: newSub || ''} : it);
+        save(); renderList();
+      });
+    });
+
+    el.querySelectorAll('.del-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = parseInt(btn.dataset.id);
+        const item = items.find(it => it.id === id);
+        if (!confirm(`「${item.title}」を削除しますか？`)) return;
+        items = items.filter(it => it.id !== id);
+        save(); renderList(); updateHome();
+      });
+    });
+
     document.getElementById('btn-add').addEventListener('click', () => {
       const title = prompt('項目タイトルを入力してください');
-      if (!title) { alert('未入力です'); return; }
+      if (!title) { alert('タイトルを入力してください'); return; }
       const sub = prompt('補足説明（任意）') || '';
-      items.push({ id: nextId++, title, sub, star: false });
+      items.push({ id: nextId++, title: title.trim(), sub, star: false });
       save(); renderList();
     });
-  }
-
-  function updateHome() {
-    const starred = items.filter(it => it.star);
-    const goalEl = document.getElementById('home-goal');
-    if (starred.length) {
-      renderSection('home-goal', starred.map(i => i.title), '⭐');
-    } else {
-      goalEl.innerHTML = '<span style="color:#bbb">リスト画面で☆を設定してください</span>';
-    }
-
-    const today = new Date().toISOString().split('T')[0];
-    const todayRec = records[today];
-    if (todayRec) {
-      const weak = items.filter(it => todayRec[it.id] === 'batsu');
-      if (weak.length) {
-        renderSection('home-weak', weak.map(i => i.title), '❌');
-      } else {
-        document.getElementById('home-weak').innerHTML = '<span style="color:#059669">課題項目なし！完璧です</span>';
-      }
-      const strong = items.filter(it => todayRec[it.id] === 'maru');
-      if (strong.length) {
-        renderSection('home-achieve', strong.map(i => i.title), '✅');
-      }
-    }
   }
 
   function startSession() {
     currentQ = 0;
     sessionResults = items.map(it => ({ id: it.id, result: null, comment: '' }));
+    const banner = document.getElementById('msg-banner');
+    banner.className = 'msg-banner';
+    banner.textContent = '';
     showQuestion();
     showScreen('start');
   }
@@ -278,7 +377,7 @@
     const item = items[currentQ];
     const pct = Math.round((currentQ / items.length) * 100);
     document.getElementById('progress').style.width = pct + '%';
-    document.getElementById('q-num').textContent = (currentQ + 1) + ' / ' + items.length;
+    document.getElementById('q-num').textContent = `QUESTION ${currentQ + 1} / ${items.length}`;
     document.getElementById('q-title').textContent = item.title;
     document.getElementById('q-sub').textContent = item.sub || '';
     document.getElementById('q-comment').value = '';
@@ -288,8 +387,14 @@
     const comment = document.getElementById('q-comment').value;
     sessionResults[currentQ].result = type;
     sessionResults[currentQ].comment = comment;
-    if (type === 'maru') showPopup('勝ち・楽勝');
-    else showPopup('勝者はすぐに前を向き、敗者はいつまでも横たわったままである');
+    const banner = document.getElementById('msg-banner');
+    if (type === 'maru') {
+      banner.className = 'msg-banner maru-msg show';
+      banner.textContent = '⚡ 勝ち・楽勝';
+    } else {
+      banner.className = 'msg-banner batsu-msg show';
+      banner.textContent = '勝者はすぐに前を向き、敗者はいつまでも横たわったままである';
+    }
     currentQ++;
     setTimeout(() => {
       if (currentQ < items.length) showQuestion();
@@ -303,6 +408,7 @@
     sessionResults.forEach(r => { rec[r.id] = r.result; });
     records[today] = rec;
     save();
+    checkAndMoveToAchieved();
     const maru = sessionResults.filter(r => r.result === 'maru').length;
     const batsu = sessionResults.filter(r => r.result === 'batsu').length;
     document.getElementById('res-maru').textContent = maru;
@@ -311,16 +417,66 @@
     showScreen('result');
   }
 
+  function renderCalendar() {
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    const firstDay = new Date(calYear, calMonth, 1).getDay();
+    const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+    const months = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+    document.getElementById('cal-title').textContent = `${calYear}年 ${months[calMonth]}`;
+    const dows = ['日','月','火','水','木','金','土'];
+    let html = dows.map(d => `<div class="cal-dow">${d}</div>`).join('');
+    for (let i = 0; i < firstDay; i++) html += `<div class="cal-day empty"></div>`;
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const rec = records[dateStr];
+      const isToday = dateStr === todayStr;
+      let mark = '';
+      if (rec) {
+        const maruCount = Object.values(rec).filter(v => v === 'maru').length;
+        const batsuCount = Object.values(rec).filter(v => v === 'batsu').length;
+        mark = batsuCount === 0 ? '<div class="cal-mark">⭕</div>' : maruCount >= batsuCount ? '<div class="cal-mark">🔥</div>' : '<div class="cal-mark">💪</div>';
+      }
+      html += `<div class="cal-day ${isToday ? 'today' : ''}" data-date="${dateStr}">${d}${mark}</div>`;
+    }
+    document.getElementById('cal-grid').innerHTML = html;
+    document.querySelectorAll('.cal-day[data-date]').forEach(el => {
+      el.addEventListener('click', () => showCalDetail(el.dataset.date));
+    });
+  }
+
+  function showCalDetail(dateStr) {
+    const rec = records[dateStr];
+    const el = document.getElementById('cal-detail');
+    const [y, m, d] = dateStr.split('-');
+    const title = `${y}年${parseInt(m)}月${parseInt(d)}日の記録`;
+    if (!rec) {
+      el.innerHTML = `<div class="cal-detail-title">${title}</div><div class="cal-empty-msg">この日の記録はありません</div>`;
+      return;
+    }
+    const allItems = [...items, ...achieved];
+    const maru = allItems.filter(it => rec[it.id] === 'maru');
+    const batsu = allItems.filter(it => rec[it.id] === 'batsu');
+    el.innerHTML = `
+      <div class="cal-detail-title">${title}</div>
+      ${maru.map(it => `<div class="cal-detail-item"><span class="cal-detail-icon">⭕</span><div class="cal-detail-text">${it.title}</div></div>`).join('')}
+      ${batsu.map(it => `<div class="cal-detail-item"><span class="cal-detail-icon">❌</span><div class="cal-detail-text">${it.title}</div></div>`).join('')}
+    `;
+  }
+
   document.getElementById('btn-start').addEventListener('click', startSession);
   document.getElementById('btn-maru').addEventListener('click', () => answer('maru'));
   document.getElementById('btn-batsu').addEventListener('click', () => answer('batsu'));
   document.getElementById('btn-back').addEventListener('click', () => showScreen('home'));
   document.getElementById('btn-home').addEventListener('click', () => { updateHome(); showScreen('home'); });
+  document.getElementById('cal-prev').addEventListener('click', () => { calMonth--; if(calMonth<0){calMonth=11;calYear--;} renderCalendar(); });
+  document.getElementById('cal-next').addEventListener('click', () => { calMonth++; if(calMonth>11){calMonth=0;calYear++;} renderCalendar(); });
 
   document.querySelectorAll('.nav-btn[data-screen]').forEach(btn => {
     btn.addEventListener('click', () => {
       if (btn.dataset.screen === 'list') renderList();
       if (btn.dataset.screen === 'home') updateHome();
+      if (btn.dataset.screen === 'calendar') renderCalendar();
       showScreen(btn.dataset.screen);
     });
   });
