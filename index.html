@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
+  <!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>しご×できスイッチ</title>
@@ -244,7 +247,28 @@
 
   <div class="screen" id="screen-notify">
     <div class="header"><h2>通知設定</h2></div>
-    <div style="flex:1;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:13px;font-weight:700;">フェーズ4で実装予定</div>
+   <div style="flex:1; padding:24px 16px; display:flex; flex-direction:column; gap:16px; overflow-y:auto;">
+  <div style="font-size:16px; font-weight:900; color:#1565C0;">🔔 通知設定</div>
+  <div style="font-size:13px; color:#888; line-height:1.7;">設定した時刻になったら振り返りチェックの通知が届きます。</div>
+
+  <div style="background:#f9f9f9; border-radius:10px; padding:16px; border:1.5px solid #e5e5e5;">
+    <div style="font-size:13px; font-weight:700; color:#333; margin-bottom:12px;">通知時刻を設定</div>
+    <input type="time" id="notify-time" style="width:100%; border:1.5px solid #1565C0; border-radius:8px; padding:10px; font-size:16px; font-weight:700; color:#111; background:white; font-family:'Noto Sans JP',sans-serif;">
+  </div>
+
+  <button id="btn-notify-save" style="background:#FFD600; color:#1565C0; border:none; border-radius:14px; padding:16px; font-size:16px; font-weight:900; cursor:pointer; width:100%; font-family:'Noto Sans JP',sans-serif;">通知を設定する🔔</button>
+
+  <div id="notify-status" style="display:none; background:#E3F2FD; border-radius:10px; padding:12px; font-size:13px; font-weight:700; color:#1565C0; text-align:center;"></div>
+
+  <div style="background:#FFFDE7; border-radius:10px; padding:12px; border:1.5px solid #FFD600;">
+    <div style="font-size:12px; color:#888; line-height:1.7;">
+      ⚠️ 通知を受け取るには<br>
+      ・iPhoneのSafariで開く<br>
+      ・ホーム画面に追加する<br>
+      ・通知の許可をONにする
+    </div>
+  </div>
+</div>
     <nav class="bottom-nav">
       <button class="nav-btn" data-screen="home"><i class="ti ti-home"></i>ホーム</button>
       <button class="nav-btn" data-screen="calendar"><i class="ti ti-calendar"></i>カレンダー</button>
@@ -255,6 +279,46 @@
 
 </div>
 <script>
+  // Firebase初期化
+const firebaseConfig = {
+  apiKey: "AIzaSyBev8h6qKuGcIeTVLdB1B6uhUu0HY9Orpo",
+  authDomain: "shigodeki-switch.firebaseapp.com",
+  projectId: "shigodeki-switch",
+  storageBucket: "shigodeki-switch.firebasestorage.app",
+  messagingSenderId: "364177556917",
+  appId: "1:364177556917:web:f812a09e7e68c0489a85fc"
+};
+firebase.initializeApp(firebaseConfig);
+const messaging = firebase.messaging();
+
+// 通知の許可を求める
+async function requestNotificationPermission() {
+  try {
+    const permission = await Notification.requestPermission();
+    if (permission === 'granted') {
+      const token = await messaging.getToken({
+        vapidKey: 'BG2hBCLHxPfXhh0VyOQcntjZeuOZkhA1SRKIkS8SCRdl_kfiHx5OQy_2UixyV1lXBKbHadv_T6IvtSbtIq_gkUE'
+      });
+      localStorage.setItem('fcm-token', token);
+      console.log('FCMトークン:', token);
+    }
+  } catch (error) {
+    console.error('通知エラー:', error);
+  }
+}
+
+// Service Worker登録
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/firebase-messaging-sw.js')
+    .then(() => requestNotificationPermission())
+    .catch(err => console.error('SW登録エラー:', err));
+}
+
+// フォアグラウンド通知
+messaging.onMessage((payload) => {
+  const { title, body } = payload.notification;
+  new Notification(title, { body });
+});
   let items = JSON.parse(localStorage.getItem('nippo-items') || 'null') || [
     {id:1,title:'今日の成果物（アウトプット）は何か言えますか？',sub:'',star:false},
     {id:2,title:'今日の仕事の経験は？',sub:'仕事の成長曲線は、経験回数と時間で決まる',star:false},
@@ -591,6 +655,46 @@ function updateActionHome() {
     }
     goalEl.innerHTML = html;
   }
+}
+// 通知設定
+document.getElementById('btn-notify-save').addEventListener('click', async () => {
+  const time = document.getElementById('notify-time').value;
+  if (!time) { alert('時刻を選択してください'); return; }
+  
+  localStorage.setItem('notify-time', time);
+  
+  const status = document.getElementById('notify-status');
+  status.style.display = 'block';
+  status.textContent = `✅ ${time} に通知を設定しました！`;
+  
+  scheduleNotification(time);
+});
+
+function scheduleNotification(time) {
+  const [hours, minutes] = time.split(':').map(Number);
+  
+  const now = new Date();
+  const notify = new Date();
+  notify.setHours(hours, minutes, 0, 0);
+  
+  if (notify <= now) notify.setDate(notify.getDate() + 1);
+  
+  const diff = notify - now;
+  
+  setTimeout(() => {
+    new Notification('⚡ しご×できスイッチ', {
+      body: '振り返りチェックの時間です！今日も勝ちにいこう💪',
+      icon: '/icon.png'
+    });
+    scheduleNotification(time);
+  }, diff);
+}
+
+// 保存済みの通知時刻を復元
+const savedTime = localStorage.getItem('notify-time');
+if (savedTime) {
+  document.getElementById('notify-time').value = savedTime;
+  scheduleNotification(savedTime);
 }
   renderList();
   updateHome();
