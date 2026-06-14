@@ -161,16 +161,16 @@
         <input type="text" id="goal-cond-input" class="goal-cond-input" placeholder="例：○○ビル年次点検を終え報告書を提出">
       </div>
       <div>
-        <div class="section-label">今日の目標</div>
-        <div class="section-box" id="home-goal"><span style="color:#bbb;font-weight:400">リスト画面で☆を設定してください</span></div>
+        <div class="section-label">📚 在学中（毎日チェックする3項目）</div>
+        <div class="section-box" id="home-goal"><span style="color:#bbb;font-weight:400">リスト画面で★を付けて在学にしてください</span></div>
       </div>
       <div>
         <div class="section-label">初期定着（7日連続⭕）</div>
         <div class="section-box" id="home-initial"><span style="color:#bbb;font-weight:400">7日連続⭕の項目がここに表示されます</span></div>
       </div>
       <div>
-        <div class="section-label">できる・達成（27日連続⭕）</div>
-        <div class="section-box" id="home-achieve"><span style="color:#bbb;font-weight:400">27日連続⭕の項目がここに表示されます</span></div>
+        <div class="section-label">🎓 卒業（殿堂・27日連続⭕）</div>
+        <div class="section-box" id="home-achieve"><span style="color:#bbb;font-weight:400">27日連続⭕で卒業した項目がここに並びます</span></div>
       </div>
       <div>
         <div class="section-label">重点項目（❌ワースト順）</div>
@@ -372,6 +372,7 @@ messaging.onMessage((payload) => {
   let nextId = Math.max(...items.map(i => i.id), 0) + 1;
   let currentQ = 0;
   let sessionResults = [];
+  let sessionItems = [];
   let calYear = new Date().getFullYear();
   let calMonth = new Date().getMonth();
   const STREAK_DAYS = 27;
@@ -417,43 +418,97 @@ messaging.onMessage((payload) => {
     return counts;
   }
 
+  // 項目ごとの「連続⭕」日数。在学開始（初出題）より前は境界として打ち切る。仕事をしていない日（記録なし）はスキップ。
+  function getStreak(itemId) {
+    let streak = 0;
+    const d = new Date();
+    for (let i = 0; i < 400; i++) {
+      const day = d.toISOString().split('T')[0];
+      d.setDate(d.getDate() - 1);
+      const rec = records[day];
+      if (!rec) continue;            // 仕事をしていない日 → スキップ
+      const v = rec[itemId];
+      if (v === 'maru') streak++;
+      else if (v === 'batsu') break; // ❌で連続が途切れる
+      else break;                    // 出題されていない日 → 在学開始前の境界
+    }
+    return streak;
+  }
+
   function checkInitialAchieved() {
-    const days = getLastNDays(INITIAL_DAYS);
-    const recordedDays = days.filter(day => records[day]);
-    if (recordedDays.length < INITIAL_DAYS) return [];
     return items.filter(item => {
-      const isStreak = recordedDays.every(day => records[day] && records[day][item.id] === 'maru');
+      const reached = getStreak(item.id) >= INITIAL_DAYS;
       const alreadyAchieved = initialAchieved.find(a => a.id === item.id);
-      return isStreak && !alreadyAchieved;
+      return reached && !alreadyAchieved;
     });
   }
 
   function checkAndMoveToAchieved() {
-    const days = getLastNDays(STREAK_DAYS);
-    const recordedDays = days.filter(day => records[day]);
-    if (recordedDays.length < STREAK_DAYS) return;
-    items.forEach(item => {
-      const isStreak = recordedDays.every(day => records[day] && records[day][item.id] === 'maru');
-      if (isStreak && !achieved.find(a => a.id === item.id)) {
+    let graduated = false;
+    items.slice().forEach(item => {
+      if (getStreak(item.id) >= STREAK_DAYS && !achieved.find(a => a.id === item.id)) {
         achieved.push({ id: item.id, title: item.title });
         items = items.filter(it => it.id !== item.id);
+        graduated = true;
       }
     });
+    if (graduated) maintainEnrollment(); // 卒業で空いた枠を❌ワーストから自動入学
     save();
   }
 
-  function updateHome() {
-    const starred = items.filter(it => it.star);
-    document.getElementById('home-goal').innerHTML = starred.length
-      ? starred.map(i => `<div class="item-row"><span class="item-icon">⭐</span><span class="item-text">${i.title}</span></div>`).join('')
-      : '<span style="color:#bbb;font-weight:400">リスト画面で☆を設定してください</span>';
+  // 在学中（star=true）を最大3つに保つ。空きがあれば❌ワースト順（なければid順）で自動入学。
+  function maintainEnrollment() {
+    const target = Math.min(3, items.length);
+    let enrolledCount = items.filter(it => it.star).length;
+    if (enrolledCount >= target) return;
+    const batsu = getBatsuCounts();
+    const waiting = items.filter(it => !it.star)
+      .sort((a, b) => (batsu[b.id] - batsu[a.id]) || (a.id - b.id));
+    for (const w of waiting) {
+      if (enrolledCount >= target) break;
+      const t = items.find(it => it.id === w.id);
+      t.star = true;
+      enrolledCount++;
+    }
+    save();
+  }
 
-    // 初期定着（7日連続）
-    const days7 = getLastNDays(INITIAL_DAYS);
-    const recorded7 = days7.filter(day => records[day]);
-    const initialItems = recorded7.length >= INITIAL_DAYS
-      ? [...items, ...achieved].filter(item => recorded7.every(day => records[day] && records[day][item.id] === 'maru'))
-      : [];
+  // 一度だけ走る移行：11項目を事実判定型の新文言に書き換え、③⑥⑨を在学中に設定
+  function migrateV3() {
+    if (localStorage.getItem('nippo-migrated-v3')) return;
+    const w = {
+      1: ['終業時、今日の成果物を一行で書いた', '言えるかではなく書く。書けなければ❌。（例：○○ビル年次点検完了・報告書提出、絶縁測定データ3件）'],
+      2: ['初めての作業・初めて見た事象・ヒヤリを1つ記録した', '成長は経験回数で決まる。記録＝カウント。'],
+      3: ['着手前に『この作業の完了条件』を一行書いてから始めた', '朝の完了条件と夜の成果物を照合すれば1日のループが閉じる。'],
+      4: ['『考えておきます』を使わず、その場で結論か期限を即答した', '判断を求められたら結論、または『○日までに決める』と期限を即答。期限の即答も即断。'],
+      5: ['無断で翌日に持ち越したタスクがゼロ', 'やむを得ず繰り越す時は理由と新期限を書けば⭕。「終えたか」より「無断繰越がないか」で判定。'],
+      6: ['人に聞く前に図面・取説・記録・法規等で15分自分で調べた（15分ルール）', '保安は判断ミスが事故に直結。「聞かない」より「調べてから聞く」。'],
+      7: ['人・機械・仕組みに任せられる作業を1つ特定し手を打った', 'テンプレ化・ツール化・依頼など。移動中に思考タスクを1つでも可。'],
+      8: ['専門の学習を15分以上、または現場の新知識を1つ記録した', '「具体的な行動」と問うのではなく、時間か記録で判定。'],
+      9: ['受けた連絡すべてに当日中の一次返信をした', '完全回答でなくても『確認して明日10時までに返します』でOK。6割主義。'],
+      10: ['点検・測定・操作・事務・道具の扱いを丁寧に一点集中であたれた', '保安の安全動作そのもの。マルチタスクをせずシングルタスクに徹する。'],
+      11: ['頼まれていない提案・改善・気づきの報告を1つした', '劣化兆候の先回り報告、手順改善案など。「頼まれていない一手」を数える。'],
+    };
+    items.forEach(it => {
+      if (w[it.id]) { it.title = w[it.id][0]; it.sub = w[it.id][1]; }
+      it.star = [3, 6, 9].includes(it.id);
+    });
+    localStorage.setItem('nippo-migrated-v3', '1');
+    save();
+    maintainEnrollment(); // 万一③⑥⑨が揃わない場合の保険
+  }
+
+  function updateHome() {
+    const enrolled = items.filter(it => it.star);
+    document.getElementById('home-goal').innerHTML = enrolled.length
+      ? enrolled.map(i => {
+          const s = getStreak(i.id);
+          return `<div class="item-row"><span class="item-icon">📚</span><span class="item-text">${i.title}<span class="streak-badge">${s}日連続</span></span></div>`;
+        }).join('')
+      : '<span style="color:#bbb;font-weight:400">リスト画面で★を付けて在学にしてください</span>';
+
+    // 初期定着（7日連続〜26日連続の在学項目）
+    const initialItems = items.filter(it => it.star && getStreak(it.id) >= INITIAL_DAYS && getStreak(it.id) < STREAK_DAYS);
     const initialEl = document.getElementById('home-initial');
     if (initialItems.length) {
       initialEl.innerHTML = initialItems.map(i => `
@@ -465,13 +520,13 @@ messaging.onMessage((payload) => {
       initialEl.innerHTML = '<span style="color:#bbb;font-weight:400">7日連続⭕の項目がここに表示されます</span>';
     }
 
-    // できる・達成（27日連続）
+    // 卒業（殿堂入り・27日連続⭕で消えた項目）
     document.getElementById('home-achieve').innerHTML = achieved.length
-      ? achieved.map(i => `<div class="item-row"><span class="item-icon">✅</span><span class="item-text">${i.title}<span class="streak-badge">${STREAK_DAYS}日連続⭕</span></span></div>`).join('')
-      : `<span style="color:#bbb;font-weight:400">${STREAK_DAYS}日連続⭕の項目がここに表示されます</span>`;
+      ? achieved.map(i => `<div class="item-row"><span class="item-icon">🎓</span><span class="item-text">${i.title}<span class="streak-badge">卒業！</span></span></div>`).join('')
+      : `<span style="color:#bbb;font-weight:400">${STREAK_DAYS}日連続⭕で卒業した項目がここに並びます</span>`;
 
     const batsuCounts = getBatsuCounts();
-    const weakItems = items.filter(it => batsuCounts[it.id] > 0).sort((a, b) => batsuCounts[b.id] - batsuCounts[a.id]).slice(0, 3);
+    const weakItems = items.filter(it => it.star && batsuCounts[it.id] > 0).sort((a, b) => batsuCounts[b.id] - batsuCounts[a.id]).slice(0, 3);
     document.getElementById('home-weak').innerHTML = weakItems.length
       ? weakItems.map(i => `<div class="item-row"><span class="item-icon">❌</span><span class="item-text">${i.title}<span class="worst-badge">❌ ${batsuCounts[i.id]}回</span></span></div>`).join('')
       : '<span style="color:#059669;font-weight:700">課題項目なし！完璧です</span>';
@@ -482,10 +537,10 @@ messaging.onMessage((payload) => {
 
   function renderList() {
     const el = document.getElementById('list-content');
-    el.innerHTML = items.map(item => `
+    el.innerHTML = `<div style="padding:12px 16px; background:#FFFDE7; border-bottom:1px solid #f0f0f0; font-size:12px; color:#555; line-height:1.6;">★ を付けた項目が<b>在学中</b>（毎日チェックする項目）です。在学は<b>3つまで</b>。27日連続⭕で卒業し、空いた枠に次の項目が自動で入学します。</div>` + items.map(item => `
       <div class="list-item">
         <div class="list-item-text">
-          <div class="list-item-title">${item.title}</div>
+          <div class="list-item-title">${item.title}${item.star ? '<span class="streak-badge">在学中</span>' : ''}</div>
           ${item.sub ? `<div class="list-item-sub">${item.sub}</div>` : ''}
         </div>
         <div class="list-item-actions">
@@ -499,6 +554,11 @@ messaging.onMessage((payload) => {
     el.querySelectorAll('.star-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const id = parseInt(btn.dataset.id);
+        const target = items.find(it => it.id === id);
+        if (!target.star && items.filter(it => it.star).length >= 3) {
+          alert('在学中は3つまでです。先にどれかの★を外してください。');
+          return;
+        }
         items = items.map(it => it.id === id ? {...it, star: !it.star} : it);
         save(); renderList(); updateHome();
       });
@@ -537,8 +597,14 @@ messaging.onMessage((payload) => {
   }
 
   function startSession() {
+    sessionItems = items.filter(it => it.star);
+    if (sessionItems.length === 0) {
+      alert('在学中の項目がありません。リスト画面で★を付けてください。');
+      updateHome(); showScreen('home');
+      return;
+    }
     currentQ = 0;
-    sessionResults = items.map(it => ({ id: it.id, result: null, comment: '' }));
+    sessionResults = sessionItems.map(it => ({ id: it.id, result: null, comment: '' }));
     const banner = document.getElementById('msg-banner');
     banner.className = 'msg-banner';
     banner.textContent = '';
@@ -547,10 +613,10 @@ messaging.onMessage((payload) => {
   }
 
   function showQuestion() {
-    const item = items[currentQ];
-    const pct = Math.round((currentQ / items.length) * 100);
+    const item = sessionItems[currentQ];
+    const pct = Math.round((currentQ / sessionItems.length) * 100);
     document.getElementById('progress').style.width = pct + '%';
-    document.getElementById('q-num').textContent = `QUESTION ${currentQ + 1} / ${items.length}`;
+    document.getElementById('q-num').textContent = `QUESTION ${currentQ + 1} / ${sessionItems.length}`;
     document.getElementById('q-title').textContent = item.title;
     document.getElementById('q-sub').textContent = item.sub || '';
     document.getElementById('q-comment').value = '';
@@ -570,14 +636,14 @@ messaging.onMessage((payload) => {
     }
     currentQ++;
     setTimeout(() => {
-      if (currentQ < items.length) showQuestion();
+      if (currentQ < sessionItems.length) showQuestion();
       else finishSession();
     }, 1500);
   }
 
   function finishSession() {
     const today = new Date().toISOString().split('T')[0];
-    const rec = {};
+    const rec = records[today] || {};
     sessionResults.forEach(r => { rec[r.id] = r.result; });
     records[today] = rec;
     save();
@@ -594,11 +660,12 @@ messaging.onMessage((payload) => {
       }, 1000);
     }
 
+    const total = sessionResults.length;
     const maru = sessionResults.filter(r => r.result === 'maru').length;
     const batsu = sessionResults.filter(r => r.result === 'batsu').length;
     document.getElementById('res-maru').textContent = maru;
     document.getElementById('res-batsu').textContent = batsu;
-    document.getElementById('res-msg').textContent = maru >= items.length * 0.8 ? '素晴らしい！今日も完全勝利！' : maru >= items.length * 0.5 ? '良いペース！明日も続けよう！' : '課題を明日の糧に！';
+    document.getElementById('res-msg').textContent = maru >= total * 0.8 ? '素晴らしい！今日も完全勝利！' : maru >= total * 0.5 ? '良いペース！明日も続けよう！' : '課題を明日の糧に！';
     showScreen('result');
   }
 
@@ -808,6 +875,7 @@ if (savedTime) {
   document.getElementById('notify-time').value = savedTime;
   scheduleNotification(savedTime);
 }
+  migrateV3();
   renderList();
   updateHome();
   updateActionHome();
