@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
+  <link rel="manifest" href="/manifest.json">
   <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js"></script>
@@ -31,6 +32,16 @@
     .section-box .item-row:not(:last-child) { border-bottom: 1px solid #f0f0f0; }
     .section-box .item-icon { flex-shrink: 0; font-size: 14px; }
     .section-box .item-text { flex: 1; line-height: 1.5; font-weight: 700; color: #222; }
+    .focus-card { background: #FFF8E1; border: 2px solid #FFD600; border-radius: 12px; padding: 14px; box-shadow: 0 2px 8px rgba(255,214,0,0.25); }
+    .focus-label { font-size: 11px; font-weight: 700; color: #F57F17; margin-bottom: 6px; letter-spacing: 0.5px; display: flex; align-items: center; gap: 4px; }
+    .focus-text { font-size: 15px; font-weight: 900; color: #5D4037; line-height: 1.55; }
+    .goal-input-wrap { background: white; border-radius: 10px; padding: 12px; border: 1.5px solid #e5e5e5; }
+    .goal-input-label { font-size: 12px; font-weight: 700; color: #1565C0; margin-bottom: 8px; }
+    .goal-cond-input { width: 100%; border: 1.5px solid #FFD600; border-radius: 8px; padding: 10px; font-size: 14px; font-weight: 700; color: #111; background: #FFFDF5; font-family: 'Noto Sans JP', sans-serif; }
+    .goal-cond-input:focus { outline: none; border-color: #1565C0; }
+    .goal-cond-label { font-size: 12px; font-weight: 700; color: #1565C0; margin-bottom: 8px; }
+    .goal-cond-box { background: #FFF8E1; border: 1.5px solid #FFD600; border-radius: 10px; padding: 14px; font-size: 15px; font-weight: 900; color: #5D4037; line-height: 1.55; }
+    .goal-recap { background: #FFF8E1; border: 1.5px solid #FFD600; border-radius: 8px; padding: 10px 12px; margin-bottom: 12px; font-size: 13px; font-weight: 700; color: #5D4037; line-height: 1.7; }
     .start-btn { background: #FFD600; color: #1565C0; border: none; border-radius: 14px; padding: 18px; font-size: 18px; font-weight: 900; cursor: pointer; width: 100%; margin-top: auto; font-family: 'Noto Sans JP', sans-serif; letter-spacing: 2px; transition: transform 0.1s; }
     .start-btn:hover { background: #FFC000; transform: scale(1.02); }
     .start-btn:active { transform: scale(0.98); }
@@ -144,6 +155,11 @@
       <span class="app-title">しご×できスイッチ</span>
     </div>
     <div class="home-content">
+      <div class="focus-card" id="home-focus" style="display:none;"></div>
+      <div class="goal-input-wrap">
+        <div class="goal-input-label">📝 今日の完了条件（着手前に書く）</div>
+        <input type="text" id="goal-cond-input" class="goal-cond-input" placeholder="例：○○ビル年次点検を終え報告書を提出">
+      </div>
       <div>
         <div class="section-label">今日の目標</div>
         <div class="section-box" id="home-goal"><span style="color:#bbb;font-weight:400">リスト画面で☆を設定してください</span></div>
@@ -179,6 +195,24 @@
       <button class="nav-btn active" data-screen="list"><i class="ti ti-list"></i>リスト</button>
       <button class="nav-btn" data-screen="notify"><i class="ti ti-bell"></i>通知</button>
     </nav>
+  </div>
+
+  <div class="screen" id="screen-goalcheck">
+    <div class="header">
+      <button class="btn-back" id="btn-goal-back">←</button>
+      <h2>今日のGOAL確認</h2>
+    </div>
+    <div class="start-content">
+      <div class="goal-cond-label">🎯 朝に決めた完了条件</div>
+      <div class="goal-cond-box" id="goalcheck-cond"></div>
+      <div class="question-title" style="margin-top:20px;">今日の成果物は？（一行で）</div>
+      <div class="question-sub">朝の完了条件と見比べて、実際どうだったかを書こう。</div>
+      <textarea class="comment-input" id="outcome-input" placeholder="例：○○ビル点検完了・報告書は明朝提出に変更"></textarea>
+      <div class="check-btns">
+        <button class="check-btn maru" id="btn-goal-maru"><span class="btn-icon">⭕</span><span class="btn-label">達成</span></button>
+        <button class="check-btn batsu" id="btn-goal-batsu"><span class="btn-icon">❌</span><span class="btn-label">未達</span></button>
+      </div>
+    </div>
   </div>
 
   <div class="screen" id="screen-start">
@@ -441,6 +475,9 @@ messaging.onMessage((payload) => {
     document.getElementById('home-weak').innerHTML = weakItems.length
       ? weakItems.map(i => `<div class="item-row"><span class="item-icon">❌</span><span class="item-text">${i.title}<span class="worst-badge">❌ ${batsuCounts[i.id]}回</span></span></div>`).join('')
       : '<span style="color:#059669;font-weight:700">課題項目なし！完璧です</span>';
+
+    updateActionHome();
+    updateGoalInput();
   }
 
   function renderList() {
@@ -598,8 +635,23 @@ messaging.onMessage((payload) => {
     const el = document.getElementById('cal-detail');
     const [y, m, d] = dateStr.split('-');
     const title = `${y}年${parseInt(m)}月${parseInt(d)}日の記録`;
-    if (!rec) {
+
+    // GOAL（完了条件・成果物・達成判定）
+    const goalCond = localStorage.getItem('goal-' + dateStr);
+    const outcome = localStorage.getItem('outcome-' + dateStr);
+    const goalResult = localStorage.getItem('goalResult-' + dateStr);
+    let goalHtml = '';
+    if (goalCond) {
+      const mark = goalResult === 'maru' ? '⭕ 達成' : goalResult === 'batsu' ? '❌ 未達' : '－';
+      goalHtml = `<div class="goal-recap">🎯 GOAL：${goalCond}${outcome ? `<br>📄 成果：${outcome}` : ''}<br>判定：${mark}</div>`;
+    }
+
+    if (!rec && !goalHtml) {
       el.innerHTML = `<div class="cal-detail-title">${title}</div><div class="cal-empty-msg">この日の記録はありません</div>`;
+      return;
+    }
+    if (!rec) {
+      el.innerHTML = `<div class="cal-detail-title">${title}</div>${goalHtml}`;
       return;
     }
     const allItems = [...items, ...achieved];
@@ -607,12 +659,13 @@ messaging.onMessage((payload) => {
     const batsu = allItems.filter(it => rec[it.id] === 'batsu');
     el.innerHTML = `
       <div class="cal-detail-title">${title}</div>
+      ${goalHtml}
       ${maru.map(it => `<div class="cal-detail-item"><span class="cal-detail-icon">⭕</span><div class="cal-detail-text">${it.title}</div></div>`).join('')}
       ${batsu.map(it => `<div class="cal-detail-item"><span class="cal-detail-icon">❌</span><div class="cal-detail-text">${it.title}</div></div>`).join('')}
     `;
   }
 
-  document.getElementById('btn-start').addEventListener('click', startSession);
+  document.getElementById('btn-start').addEventListener('click', beginCheck);
   document.getElementById('btn-maru').addEventListener('click', () => answer('maru'));
   document.getElementById('btn-batsu').addEventListener('click', () => answer('batsu'));
   document.getElementById('btn-back').addEventListener('click', () => showScreen('home'));
@@ -641,21 +694,80 @@ document.getElementById('btn-action-save').addEventListener('click', () => {
   document.getElementById('action-input').value = '';
 });
 
-function updateActionHome() {
-  const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
-  const key = 'action-' + yesterday.toISOString().split('T')[0];
-  const action = localStorage.getItem(key);
-  const goalEl = document.getElementById('home-goal');
-  if (action) {
-    const starred = items.filter(it => it.star);
-    let html = `<div class="item-row"><span class="item-icon">📌</span><span class="item-text" style="color:#E53935;">昨日の改善：${action}</span></div>`;
-    if (starred.length) {
-      html += starred.map(i => `<div class="item-row"><span class="item-icon">⭐</span><span class="item-text">${i.title}</span></div>`).join('');
+// 直近で保存された重点（今日より前の最新の1件）を探す。週末を挟んでも消えない。
+function getLatestFocus() {
+  const todayStr = new Date().toISOString().split('T')[0];
+  let latestDate = null;
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key && key.indexOf('action-') === 0) {
+      const date = key.slice(7); // 'action-' の後ろ = 日付
+      if (date < todayStr && (!latestDate || date > latestDate)) {
+        latestDate = date;
+      }
     }
-    goalEl.innerHTML = html;
+  }
+  if (!latestDate) return null;
+  return { date: latestDate, text: localStorage.getItem('action-' + latestDate) };
+}
+
+function updateActionHome() {
+  const el = document.getElementById('home-focus');
+  if (!el) return;
+  const focus = getLatestFocus();
+  if (focus && focus.text) {
+    el.innerHTML = `<div class="focus-label"><i class="ti ti-target-arrow"></i>今日の重点（昨日のあなたが決めたこと）</div><div class="focus-text">${focus.text}</div>`;
+    el.style.display = 'block';
+  } else {
+    el.style.display = 'none';
   }
 }
+
+// ===== 第2段階：今日のGOAL（完了条件）=====
+function todayStr() { return new Date().toISOString().split('T')[0]; }
+
+// ホームの完了条件入力欄に、その日の保存内容を復元する
+function updateGoalInput() {
+  const input = document.getElementById('goal-cond-input');
+  if (!input) return;
+  input.value = localStorage.getItem('goal-' + todayStr()) || '';
+}
+
+// 入力するたびに自動保存（着手前に書いた完了条件を日中ずっと保持）
+(function () {
+  const input = document.getElementById('goal-cond-input');
+  if (input) {
+    input.addEventListener('input', (e) => {
+      localStorage.setItem('goal-' + todayStr(), e.target.value);
+    });
+  }
+})();
+
+// STARTを押したとき：朝の完了条件があればGOAL確認画面へ、なければ通常チェックへ
+function beginCheck() {
+  const cond = (localStorage.getItem('goal-' + todayStr()) || '').trim();
+  if (cond) {
+    document.getElementById('goalcheck-cond').textContent = cond;
+    document.getElementById('outcome-input').value = localStorage.getItem('outcome-' + todayStr()) || '';
+    showScreen('goalcheck');
+  } else {
+    startSession();
+  }
+}
+
+// GOAL確認で達成/未達を押したとき：成果物と判定を保存し、11項目チェックへ進む
+function submitGoalCheck(type) {
+  const outcome = document.getElementById('outcome-input').value.trim();
+  if (!outcome) { alert('今日の成果物を一行で書いてください'); return; }
+  localStorage.setItem('outcome-' + todayStr(), outcome);
+  localStorage.setItem('goalResult-' + todayStr(), type);
+  startSession();
+}
+
+document.getElementById('btn-goal-maru').addEventListener('click', () => submitGoalCheck('maru'));
+document.getElementById('btn-goal-batsu').addEventListener('click', () => submitGoalCheck('batsu'));
+document.getElementById('btn-goal-back').addEventListener('click', () => { updateHome(); showScreen('home'); });
+
 // 通知設定
 document.getElementById('btn-notify-save').addEventListener('click', async () => {
   const time = document.getElementById('notify-time').value;
